@@ -118,3 +118,4 @@ The app currently uses Next.js 16. Prefer local docs under `node_modules/next/di
 - [Reminders](./reminders-spec.md)
 - [Dashboard](./dashboard-spec.md)
 - [Data and Security](./data-security-spec.md)
+- [UAT Deployment](./deployment-uat-spec.md)
