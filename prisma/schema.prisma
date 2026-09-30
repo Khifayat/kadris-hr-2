@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  OWNER_ADMIN
+  HR_ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum EmployeeStatus {
+  ONBOARDING
+  ACTIVE
+  LEAVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  PRN
+  CONTRACTOR
+  TEMPORARY
+}
+
+enum ClearanceStatus {
+  CLEARED
+  NOT_CLEARED
+}
+
+enum RequirementType {
+  DOCUMENT
+  BACKGROUND_CHECK
+  CERTIFICATION
+  TRAINING
+  ACKNOWLEDGEMENT
+  HEALTH_SCREENING
+  OTHER
+}
+
+enum RequirementStatus {
+  NOT_STARTED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentStatus {
+  ACTIVE
+  REMOVED
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  authProviderId       String                @unique
+  email                String                @unique
+  name                 String
+  role                 UserRole
+  active               Boolean               @default(true)
+  employeeId           String?               @unique
+  employee             Employee?             @relation("EmployeeUser", fields: [employeeId], references: [id], onDelete: SetNull)
+  approvedRequirements EmployeeRequirement[] @relation("RequirementApprovedBy")
+  rejectedRequirements EmployeeRequirement[] @relation("RequirementRejectedBy")
+  uploadedDocuments    Document[]            @relation("DocumentUploadedBy")
+  clearanceTransitions ClearanceEvent[]      @relation("ClearanceTriggeredBy")
+  auditLogs            AuditLog[]            @relation("AuditActor")
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model Employee {
+  id                       String                @id @default(cuid())
+  employeeNumber           String                @unique
+  firstName                String
+  lastName                 String
+  email                    String                @unique
+  phone                    String?
+  status                   EmployeeStatus        @default(ONBOARDING)
+  clearanceStatus          ClearanceStatus       @default(NOT_CLEARED)
+  clearanceCalculatedAt    DateTime?
+  clearedAt                DateTime?
+  jobRoleId                String
+  jobRole                  JobRole               @relation(fields: [jobRoleId], references: [id], onDelete: Restrict)
+  supervisorId             String?
+  supervisor               Employee?             @relation("EmployeeSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+  directReports            Employee[]            @relation("EmployeeSupervisor")
+  hireDate                 DateTime              @db.Date
+  terminationDate          DateTime?             @db.Date
+  employmentType           EmploymentType
+  transportsParticipants   Boolean               @default(false)
+  performsMedicationDuties Boolean               @default(false)
+  user                     User?                 @relation("EmployeeUser")
+  requirements             EmployeeRequirement[]
+  documents                Document[]
+  clearanceEvents          ClearanceEvent[]
+  auditLogs                AuditLog[]
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+
+  @@index([status])
+  @@index([clearanceStatus])
+  @@index([jobRoleId])
+  @@index([supervisorId])
+  @@index([lastName, firstName])
+}
+
+model JobRole {
+  id           String               @id @default(cuid())
+  name         String               @unique
+  department   String
+  description  String?
+  active       Boolean              @default(true)
+  employees    Employee[]
+  requirements JobRoleRequirement[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model Requirement {
+  id                   String                @id @default(cuid())
+  name                 String                @unique
+  description          String?
+  requirementType      RequirementType
+  expires              Boolean               @default(false)
+  expirationPeriodDays Int?
+  requiresApproval     Boolean               @default(true)
+  active               Boolean               @default(true)
+  reminderDays         Int[]                 @default([60, 30, 7])
+  jobRoles             JobRoleRequirement[]
+  employeeAssignments  EmployeeRequirement[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model JobRoleRequirement {
+  id                   String      @id @default(cuid())
+  jobRoleId            String
+  jobRole              JobRole     @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
+  requirementId        String
+  requirement          Requirement @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  requiredBeforeWork   Boolean     @default(true)
+  conditional          Boolean     @default(false)
+  conditionKey         String?
+  conditionDescription String?
+  active               Boolean     @default(true)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@unique([jobRoleId, requirementId])
+  @@index([requirementId])
+}
+
+model EmployeeRequirement {
+  id                 String            @id @default(cuid())
+  employeeId         String
+  employee           Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  requirementId      String
+  requirement        Requirement       @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  status             RequirementStatus @default(NOT_STARTED)
+  requiredBeforeWork Boolean
+  conditional        Boolean           @default(false)
+  conditionSatisfied Boolean           @default(true)
+  requiresApproval   Boolean
+  expires            Boolean
+  reminderDays       Int[]             @default([60, 30, 7])
+  completedDate      DateTime?         @db.Date
+  expirationDate     DateTime?         @db.Date
+  approvedByUserId   String?
+  approvedBy         User?             @relation("RequirementApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  approvedAt         DateTime?
+  rejectedByUserId   String?
+  rejectedBy         User?             @relation("RequirementRejectedBy", fields: [rejectedByUserId], references: [id], onDelete: SetNull)
+  rejectedAt         DateTime?
+  rejectionReason    String?
+  notes              String?
+  documents          Document[]
+  active             Boolean           @default(true)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@unique([employeeId, requirementId])
+  @@index([requirementId])
+  @@index([status])
+  @@index([expirationDate])
+}
+
+model Document {
+  id                    String               @id @default(cuid())
+  employeeId            String
+  employee              Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeRequirementId String?
+  employeeRequirement   EmployeeRequirement? @relation(fields: [employeeRequirementId], references: [id], onDelete: SetNull)
+  fileName              String
+  storageKey            String               @unique
+  mimeType              String
+  sizeBytes             Int
+  documentType          String
+  status                DocumentStatus       @default(ACTIVE)
+  uploadedByUserId      String
+  uploadedBy            User                 @relation("DocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  uploadedAt            DateTime             @default(now())
+  removedAt             DateTime?
+
+  @@index([employeeId])
+  @@index([employeeRequirementId])
+}
+
+model ClearanceEvent {
+  id                String           @id @default(cuid())
+  employeeId        String
+  employee          Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  fromStatus        ClearanceStatus?
+  toStatus          ClearanceStatus
+  reasons           Json
+  triggeredByUserId String?
+  triggeredBy       User?            @relation("ClearanceTriggeredBy", fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+
+  @@index([employeeId, createdAt])
+}
+
+model AuditLog {
+  id         String    @id @default(cuid())
+  actorId    String?
+  actor      User?     @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([employeeId, createdAt])
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+}
