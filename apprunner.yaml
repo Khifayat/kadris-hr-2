@@ -1,3 +1,4 @@
+# Deprecated for new UAT deployments: prefer ECS/Fargate because App Runner is closed to new customers after April 30, 2026.
 version: 1.0
 runtime: nodejs22
 build:

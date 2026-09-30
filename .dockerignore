@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+generated
+storage
+coverage
+.env
+.env.*
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
