@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             {params.error && <span className="status-badge status-rejected">Sign-in failed</span>}
             <h2>Secure sign in</h2>
             <p>Use your Kadris account to access employee records, compliance documents, and reminders.</p>
-            <Link className="button button-primary" href="/auth/login">Continue with AWS Cognito</Link>
+            <a className="button button-primary" href="/auth/login">Continue with AWS Cognito</a>
           </div>
         ) : devBypass ? (
           <div>

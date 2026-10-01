@@ -9,6 +9,7 @@ This app is intended to store HR PII and compliance documents. Production deploy
 - Require MFA for HR/admin accounts.
 - Use a strong app `SESSION_SECRET`; rotate it if exposed.
 - Keep `DEV_AUTH_BYPASS=false` in every non-local environment.
+- Grant the workload only the Cognito administrative actions needed to create, inspect, enable, disable, and resend invitations for users in the configured pool.
 
 ## Authorization
 

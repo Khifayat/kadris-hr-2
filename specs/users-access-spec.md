@@ -46,7 +46,13 @@ Capabilities:
 
 ## Cognito linking behavior
 
-When a newly added user signs in through Cognito with a matching email, `/auth/callback` replaces `pending:{uuid}` with `cognito:{sub}`. This marks the user as Cognito linked.
+Creating an employee also creates or links an app user. By default, the app calls Cognito `AdminCreateUser`, which sends first-login instructions by email. The employee profile supports retrying or resending the invitation. When Cognito returns a subject, the app stores `cognito:{sub}` immediately; `/auth/callback` can still link a pending user by matching email.
+
+Required deployment configuration:
+
+- `COGNITO_USER_POOL_ID`
+- `AWS_REGION`
+- workload credentials with least-privilege Cognito admin permissions
 
 ## Audit logs
 
@@ -56,3 +62,5 @@ Actions emit audit records:
 - `USER_UPDATED`
 - `USER_DEACTIVATED`
 - `USER_REACTIVATED`
+- `USER_INVITED`
+- `USER_LINKED_TO_EMPLOYEE`

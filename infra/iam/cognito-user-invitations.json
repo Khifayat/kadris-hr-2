@@ -1,0 +1,16 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ManageKadrisEmployeeInvitations",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminEnableUser",
+        "cognito-idp:AdminDisableUser"
+      ],
+      "Resource": "arn:aws:cognito-idp:us-east-2:445567071188:userpool/us-east-2_qd744O2J6"
+    }
+  ]
+}

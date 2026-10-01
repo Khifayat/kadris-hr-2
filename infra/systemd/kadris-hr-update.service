@@ -1,0 +1,12 @@
+[Unit]
+Description=Pull and deploy the latest Kadris HR UAT image
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=ec2-user
+ExecStart=/usr/local/bin/kadris-hr-update
+
+[Install]
+WantedBy=multi-user.target

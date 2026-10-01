@@ -1,6 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import { inviteCognitoUser } from "../auth/cognito-admin";
 import { prisma } from "../db/prisma";
 import { createAppUserSchema, updateAppUserSchema } from "./schema";
 
@@ -67,6 +68,39 @@ export async function createAppUser(formData: FormData, actorId: string) {
       newValue: { email: user.email, role: user.role, employeeId: user.employeeId },
     },
   });
+}
+
+export async function inviteAppUser(userId: string, actorId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, name: true, active: true },
+  });
+  if (!user || !user.active) throw new Error("An active app user is required before sending an invitation.");
+
+  const invitation = await inviteCognitoUser({ email: user.email, name: user.name });
+  const updated = invitation.sub
+    ? await prisma.user.update({
+        where: { id: user.id },
+        data: { authProviderId: `cognito:${invitation.sub}` },
+      })
+    : user;
+
+  await prisma.auditLog.create({
+    data: {
+      actorId,
+      action: "USER_INVITED",
+      entityType: "User",
+      entityId: user.id,
+      newValue: { email: user.email, cognitoStatus: invitation.status },
+    },
+  });
+  return updated;
+}
+
+export async function inviteEmployeeUser(employeeId: string, actorId: string) {
+  const user = await prisma.user.findUnique({ where: { employeeId }, select: { id: true } });
+  if (!user) throw new Error("This employee does not have a linked app user.");
+  return inviteAppUser(user.id, actorId);
 }
 
 export async function updateAppUser(formData: FormData, actorId: string) {

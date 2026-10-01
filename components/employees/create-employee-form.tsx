@@ -41,6 +41,9 @@ export function CreateEmployeeForm({ roles, supervisors }: { roles: Option[]; su
         <label className="checkbox-card"><input name="transportsParticipants" type="checkbox" /><span><strong>Transports participants</strong><small>Requires a driver&apos;s license and auto insurance.</small></span></label>
         <label className="checkbox-card"><input name="performsMedicationDuties" type="checkbox" /><span><strong>Performs medication duties</strong><small>Requires Medication Technician certification when mapped to the role.</small></span></label>
       </div></section>
+      <section className="form-section"><div className="form-section-copy"><span>04</span><div><h2>App access</h2><p>Create their Kadris HR account and let Cognito email first-login instructions.</p></div></div><div className="duty-options">
+        <label className="checkbox-card"><input name="sendInvitation" type="checkbox" defaultChecked /><span><strong>Send account invitation</strong><small>The employee will receive a temporary password and create a new password at first sign-in.</small></span></label>
+      </div></section>
       <div className="form-actions"><Link className="button button-secondary" href="/employees">Cancel</Link><SubmitButton /></div>
     </form>
   );

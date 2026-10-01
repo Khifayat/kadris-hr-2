@@ -4,9 +4,9 @@ import { createHash, createHmac, createPublicKey, createVerify, randomBytes } fr
 import { cookies } from "next/headers";
 
 export const APP_SESSION_COOKIE = "kadris_session";
-const STATE_COOKIE = "kadris_oauth_state";
-const VERIFIER_COOKIE = "kadris_pkce_verifier";
-const NONCE_COOKIE = "kadris_oidc_nonce";
+export const STATE_COOKIE = "kadris_oauth_state";
+export const VERIFIER_COOKIE = "kadris_pkce_verifier";
+export const NONCE_COOKIE = "kadris_oidc_nonce";
 const SESSION_TTL_SECONDS = 8 * 60 * 60;
 
 type CognitoConfig = {
@@ -101,7 +101,6 @@ export function verifyAppSession(token: string | undefined, secret: string): App
   if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
   return payload;
 }
-
 export async function setAppSessionCookie(payload: Omit<AppSessionPayload, "exp">) {
   const config = getCognitoConfig();
   if (!config) throw new Error("Cognito is not configured.");

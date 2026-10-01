@@ -44,6 +44,8 @@ The directory supports employee listing and filtering/search through server-side
 5. Conditional requirements evaluate against employee duty flags.
 6. Initial clearance is calculated.
 7. Audit log is recorded.
+8. A linked app user with the `EMPLOYEE` role is created or connected by matching email.
+9. When requested, Cognito provisions the account and emails first-login instructions. Invitation failure does not roll back the employee record and can be retried from the profile.
 
 ## Employee profile
 

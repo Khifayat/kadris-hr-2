@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "../../generated/prisma/client";
 import { calculateEmployeeClearance, isConditionSatisfied } from "../compliance";
 import { prisma } from "../db/prisma";
@@ -8,7 +9,7 @@ import type { CreateEmployeeInput } from "./schema";
 export async function createEmployeeWithRequirements(
   input: CreateEmployeeInput,
   actorId: string,
-): Promise<string> {
+): Promise<{ employeeId: string; userId: string }> {
   return prisma.$transaction(async (tx) => {
     const role = await tx.jobRole.findFirst({
       where: { id: input.jobRoleId, active: true },
@@ -44,6 +45,22 @@ export async function createEmployeeWithRequirements(
         performsMedicationDuties: input.performsMedicationDuties,
       },
     });
+
+    const existingUser = await tx.user.findUnique({ where: { email: employee.email } });
+    if (existingUser?.employeeId && existingUser.employeeId !== employee.id) {
+      throw new Error("That email address is already linked to another employee account.");
+    }
+    const appUser = existingUser
+      ? await tx.user.update({ where: { id: existingUser.id }, data: { employeeId: employee.id } })
+      : await tx.user.create({
+          data: {
+            authProviderId: `pending:${randomUUID()}`,
+            email: employee.email,
+            name: `${employee.firstName} ${employee.lastName}`,
+            role: "EMPLOYEE",
+            employeeId: employee.id,
+          },
+        });
 
     const assignments = await Promise.all(
       role.requirements.map((mapping) =>
@@ -102,6 +119,14 @@ export async function createEmployeeWithRequirements(
           status: employee.status,
         },
       },
+      {
+        actorId,
+        employeeId: employee.id,
+        action: existingUser ? "USER_LINKED_TO_EMPLOYEE" : "USER_CREATED",
+        entityType: "User",
+        entityId: appUser.id,
+        newValue: { email: appUser.email, role: appUser.role, employeeId: employee.id },
+      },
       ...assignments.map((assignment) => ({
         actorId,
         employeeId: employee.id,
@@ -127,6 +152,6 @@ export async function createEmployeeWithRequirements(
       },
     });
 
-    return employee.id;
+    return { employeeId: employee.id, userId: appUser.id };
   });
 }

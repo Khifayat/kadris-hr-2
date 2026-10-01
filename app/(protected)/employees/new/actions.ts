@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth/session";
 import { createEmployeeSchema } from "@/lib/employees/schema";
 import { createEmployeeWithRequirements } from "@/lib/employees/service";
 import { HR_WRITE_ROLES } from "@/lib/permissions/roles";
+import { inviteAppUser } from "@/lib/users/service";
 
 export type CreateEmployeeState = {
   error?: string;
@@ -36,8 +37,9 @@ export async function createEmployeeAction(
   }
 
   let employeeId: string;
+  let userId: string;
   try {
-    employeeId = await createEmployeeWithRequirements(parsed.data, actor.id);
+    ({ employeeId, userId } = await createEmployeeWithRequirements(parsed.data, actor.id));
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { error: "An employee already uses that employee number or email address." };
@@ -45,5 +47,13 @@ export async function createEmployeeAction(
     return { error: error instanceof Error ? error.message : "Unable to create the employee." };
   }
 
-  redirect(`/employees/${employeeId}`);
+  if (formData.get("sendInvitation") === "on") {
+    try {
+      await inviteAppUser(userId, actor.id);
+    } catch {
+      redirect(`/employees/${employeeId}?access=invite_failed`);
+    }
+  }
+
+  redirect(`/employees/${employeeId}?access=${formData.get("sendInvitation") === "on" ? "invited" : "pending"}`);
 }

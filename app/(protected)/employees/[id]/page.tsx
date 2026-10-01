@@ -4,7 +4,7 @@ import { calculateEmployeeClearance, categorizeExpiration } from "@/lib/complian
 import { requireRole } from "@/lib/auth/session";
 import { getEmployeeProfile } from "@/lib/employees/queries";
 import { canManageEmployees, HR_READ_ROLES } from "@/lib/permissions/roles";
-import { approveRequirementAction, rejectRequirementAction, submitDocumentAction } from "./actions";
+import { approveRequirementAction, inviteEmployeeUserAction, rejectRequirementAction, submitDocumentAction } from "./actions";
 
 function formatDate(value: Date | null) {
   return value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(value) : "—";
@@ -15,9 +15,10 @@ function formatBytes(value: number) {
   return `${(value / 1024 / 1024).toFixed(1)} MB`;
 }
 
-export default async function EmployeeProfilePage({ params }: PageProps<"/employees/[id]">) {
+export default async function EmployeeProfilePage({ params, searchParams }: PageProps<"/employees/[id]">) {
   const user = await requireRole(HR_READ_ROLES);
   const { id } = await params;
+  const accessStatus = (await searchParams).access;
   const employee = await getEmployeeProfile(id);
   if (!employee) notFound();
   const canManage = canManageEmployees(user.role);
@@ -30,6 +31,9 @@ export default async function EmployeeProfilePage({ params }: PageProps<"/employ
 
   return <main className="page-wrap">
     <Link className="back-link" href="/employees">← Back to employees</Link>
+    {accessStatus === "invited" && <section className="attention-banner"><div className="attention-icon">✓</div><div><strong>Account invitation sent</strong><p>Cognito emailed first-login instructions to {employee.email}.</p></div></section>}
+    {accessStatus === "pending" && <section className="attention-banner"><div className="attention-icon">i</div><div><strong>Account invitation not sent</strong><p>The employee record and app user are ready. Send the invitation when access should begin.</p></div></section>}
+    {accessStatus === "invite_failed" && <section className="attention-banner"><div className="attention-icon">!</div><div><strong>Employee created, but invitation failed</strong><p>Check Cognito configuration or IAM permissions, then use Send invitation below.</p></div></section>}
     <section className="profile-hero"><div className="profile-avatar">{employee.firstName[0]}{employee.lastName[0]}</div><div className="profile-title"><div><p>{employee.employeeNumber}</p><h1>{employee.firstName} {employee.lastName}</h1><span>{employee.jobRole.name} · {employee.jobRole.department}</span></div><span className={`clearance-pill ${clearance.cleared ? "cleared" : "blocked"}`}><i />{clearance.cleared ? "Cleared to work" : "Not cleared"}</span></div></section>
     {!clearance.cleared && <section className="attention-banner"><div className="attention-icon">!</div><div><strong>{clearance.reasons.length} clearance {clearance.reasons.length === 1 ? "blocker" : "blockers"}</strong><p>{clearance.reasons.map((reason) => `${reason.requirement}: ${reason.reason.replaceAll("_", " ").toLowerCase()}`).join(" · ")}</p></div></section>}
     <section className="profile-grid"><div className="panel profile-main"><div className="panel-heading"><div><h2>Compliance checklist</h2><p>{approved} of {applicable.length} applicable requirements approved</p></div><strong className="completion-number">{completion}%</strong></div><div className="progress-large"><i style={{ width: `${completion}%` }} /></div><div className="checklist">
@@ -51,6 +55,6 @@ export default async function EmployeeProfilePage({ params }: PageProps<"/employ
           {canManage && item.status === "PENDING_REVIEW" && <div className="review-actions"><form action={approveRequirementAction}><input type="hidden" name="employeeRequirementId" value={item.id} /><button className="button button-primary" type="submit">Approve</button></form><form className="reject-form" action={rejectRequirementAction}><input type="hidden" name="employeeRequirementId" value={item.id} /><input name="rejectionReason" placeholder="Reason for rejection" required /><button className="button button-danger" type="submit">Reject</button></form></div>}
         </div></article>;
       })}
-    </div></div><aside className="profile-side"><section className="panel"><h2>Employment</h2><dl className="detail-list"><div><dt>Status</dt><dd>{employee.status.toLowerCase()}</dd></div><div><dt>Hire date</dt><dd>{formatDate(employee.hireDate)}</dd></div><div><dt>Type</dt><dd>{employee.employmentType.replaceAll("_", " ").toLowerCase()}</dd></div><div><dt>Supervisor</dt><dd>{employee.supervisor ? `${employee.supervisor.firstName} ${employee.supervisor.lastName}` : "Not assigned"}</dd></div><div><dt>Transports</dt><dd>{employee.transportsParticipants ? "Yes" : "No"}</dd></div><div><dt>Medication duties</dt><dd>{employee.performsMedicationDuties ? "Yes" : "No"}</dd></div></dl></section><section className="panel"><h2>Contact</h2><dl className="detail-list"><div><dt>Email</dt><dd>{employee.email}</dd></div><div><dt>Phone</dt><dd>{employee.phone || "Not provided"}</dd></div></dl></section><section className="panel"><h2>Recent activity</h2><div className="audit-list">{employee.auditLogs.map((entry) => <div key={entry.id}><i /><span><strong>{entry.action.replaceAll("_", " ").toLowerCase()}</strong><small>{entry.actor?.name || "System"} · {formatDate(entry.createdAt)}</small></span></div>)}</div></section></aside></section>
+    </div></div><aside className="profile-side"><section className="panel"><h2>Employment</h2><dl className="detail-list"><div><dt>Status</dt><dd>{employee.status.toLowerCase()}</dd></div><div><dt>Hire date</dt><dd>{formatDate(employee.hireDate)}</dd></div><div><dt>Type</dt><dd>{employee.employmentType.replaceAll("_", " ").toLowerCase()}</dd></div><div><dt>Supervisor</dt><dd>{employee.supervisor ? `${employee.supervisor.firstName} ${employee.supervisor.lastName}` : "Not assigned"}</dd></div><div><dt>Transports</dt><dd>{employee.transportsParticipants ? "Yes" : "No"}</dd></div><div><dt>Medication duties</dt><dd>{employee.performsMedicationDuties ? "Yes" : "No"}</dd></div></dl></section><section className="panel"><h2>App access</h2>{employee.user ? <><p>{employee.user.authProviderId.startsWith("cognito:") ? "Cognito account provisioned" : "Invitation pending"}</p>{canManage && <form action={inviteEmployeeUserAction}><input type="hidden" name="employeeId" value={employee.id} /><button className="button button-secondary" type="submit">{employee.user.authProviderId.startsWith("cognito:") ? "Resend invitation" : "Send invitation"}</button></form>}</> : <p>No linked app user.</p>}</section><section className="panel"><h2>Contact</h2><dl className="detail-list"><div><dt>Email</dt><dd>{employee.email}</dd></div><div><dt>Phone</dt><dd>{employee.phone || "Not provided"}</dd></div></dl></section><section className="panel"><h2>Recent activity</h2><div className="audit-list">{employee.auditLogs.map((entry) => <div key={entry.id}><i /><span><strong>{entry.action.replaceAll("_", " ").toLowerCase()}</strong><small>{entry.actor?.name || "System"} · {formatDate(entry.createdAt)}</small></span></div>)}</div></section></aside></section>
   </main>;
 }

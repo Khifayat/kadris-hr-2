@@ -49,6 +49,7 @@ export async function getEmployeeProfile(id: string) {
     where: { id },
     include: {
       jobRole: true,
+      user: { select: { id: true, authProviderId: true, email: true, active: true } },
       supervisor: { select: { id: true, firstName: true, lastName: true } },
       requirements: {
         where: { active: true },

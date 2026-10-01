@@ -51,7 +51,7 @@ export function AppShell({ user, children }: { user: AppUser; children: ReactNod
         </nav>
         <div className="sidebar-foot">
           <div className="avatar">{initials}</div>
-          <div><strong>{user.name}</strong><small>{user.role.replaceAll("_", " ")} · <Link href="/auth/logout">Sign out</Link></small></div>
+          <div><strong>{user.name}</strong><small>{user.role.replaceAll("_", " ")} · <a href="/auth/logout">Sign out</a></small></div>
         </div>
       </aside>
       <div className="app-content">

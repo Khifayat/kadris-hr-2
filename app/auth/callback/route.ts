@@ -9,7 +9,8 @@ function displayName(claims: { name?: string; given_name?: string; family_name?:
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const config = getCognitoConfig();
-  const baseUrl = config?.appBaseUrl || url.origin;
+  if (!config) return NextResponse.redirect(new URL("/login?error=auth_not_configured", url.origin));
+  const baseUrl = config.appBaseUrl || url.origin;
   const error = url.searchParams.get("error");
   if (error) return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, baseUrl));
 
