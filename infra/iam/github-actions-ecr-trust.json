@@ -10,7 +10,7 @@
       "Condition": {
         "StringEquals": {
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": "repo:Khifayat/kadris-hr-2:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:Khifayat@57511867/kadris-hr-2@1398833744:ref:refs/heads/main"
         }
       }
     }
