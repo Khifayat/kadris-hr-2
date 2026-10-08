@@ -12,6 +12,7 @@ export type AppUser = {
   email: string;
   role: UserRole;
   employeeId: string | null;
+  tutorialCompletedAt: Date | null;
 };
 
 const appUserSelect = {
@@ -20,6 +21,7 @@ const appUserSelect = {
   email: true,
   role: true,
   employeeId: true,
+  tutorialCompletedAt: true,
 } as const;
 
 export async function getCurrentUser(): Promise<AppUser | null> {

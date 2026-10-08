@@ -1,6 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import type { UserRole } from "../../generated/prisma/client";
 import { inviteCognitoUser } from "../auth/cognito-admin";
 import { prisma } from "../db/prisma";
 import { createAppUserSchema, updateAppUserSchema, updateOwnProfileSchema } from "./schema";
@@ -15,6 +16,14 @@ async function assertCanModifyUser(actorId: string, targetUserId: string, nextAc
   if (actorId === targetUserId && nextActive === false) {
     throw new Error("You cannot deactivate your own account.");
   }
+}
+
+async function assertAdminCanManageUser(actorRole: UserRole, targetUserId: string, nextRole?: string) {
+  if (actorRole === "OWNER_ADMIN") return;
+  if (nextRole === "OWNER_ADMIN") throw new Error("Only the owner can assign the Owner Admin role.");
+  const target = await prisma.user.findUnique({ where: { id: targetUserId }, select: { role: true } });
+  if (!target) throw new Error("User not found.");
+  if (target.role === "OWNER_ADMIN") throw new Error("Only the owner can manage the Owner Admin account.");
 }
 
 async function assertOwnerAdminSafety(targetUserId: string, nextRole: string, nextActive: boolean) {
@@ -39,13 +48,17 @@ async function validateEmployeeLink(employeeId: string | null, userId?: string) 
   if (existing) throw new Error(`That employee profile is already linked to ${existing.email}.`);
 }
 
-export async function createAppUser(formData: FormData, actorId: string) {
+export async function createAppUser(formData: FormData, actorId: string, actorRole: UserRole) {
   const input = createAppUserSchema.parse({
     email: formData.get("email"),
     name: formData.get("name"),
     role: formData.get("role"),
     employeeId: formData.get("employeeId"),
   });
+
+  if (actorRole !== "OWNER_ADMIN" && input.role === "OWNER_ADMIN") {
+    throw new Error("Only the owner can assign the Owner Admin role.");
+  }
 
   await validateEmployeeLink(input.employeeId);
 
@@ -103,7 +116,7 @@ export async function inviteEmployeeUser(employeeId: string, actorId: string) {
   return inviteAppUser(user.id, actorId);
 }
 
-export async function updateAppUser(formData: FormData, actorId: string) {
+export async function updateAppUser(formData: FormData, actorId: string, actorRole: UserRole) {
   const input = updateAppUserSchema.parse({
     userId: formData.get("userId"),
     email: formData.get("email"),
@@ -113,6 +126,7 @@ export async function updateAppUser(formData: FormData, actorId: string) {
   });
 
   await assertCanModifyUser(actorId, input.userId);
+  await assertAdminCanManageUser(actorRole, input.userId, input.role);
   await assertOwnerAdminSafety(input.userId, input.role, true);
   await validateEmployeeLink(input.employeeId, input.userId);
 
@@ -154,11 +168,12 @@ export async function updateOwnProfile(formData: FormData, userId: string) {
   });
 }
 
-export async function setAppUserActive(formData: FormData, actorId: string, active: boolean) {
+export async function setAppUserActive(formData: FormData, actorId: string, actorRole: UserRole, active: boolean) {
   const userId = getFormId(formData, "userId");
   await assertCanModifyUser(actorId, userId, active);
   const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
   if (!target) throw new Error("User not found.");
+  await assertAdminCanManageUser(actorRole, userId, target.role);
   await assertOwnerAdminSafety(userId, target.role, active);
 
   const user = await prisma.user.update({ where: { id: userId }, data: { active } });

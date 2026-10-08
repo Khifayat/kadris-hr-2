@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/auth/session";
-import { HR_WRITE_ROLES } from "@/lib/permissions/roles";
+import { canManageAppUsers, HR_WRITE_ROLES } from "@/lib/permissions/roles";
 import { getSettingsData } from "@/lib/settings/queries";
 import { CONDITION_OPTIONS } from "@/lib/settings/schema";
 import { employeeLabel, getUsersAccessData } from "@/lib/users/queries";
@@ -16,7 +16,7 @@ import {
   upsertRoleRequirementAction,
 } from "./actions";
 
-const accessRoles = ["OWNER_ADMIN", "HR_ADMIN", "MANAGER", "EMPLOYEE"];
+const accessRoles = ["OWNER_ADMIN", "ADMIN", "HR_ADMIN", "MANAGER", "EMPLOYEE"];
 
 const requirementTypes = [
   "DOCUMENT",
@@ -37,7 +37,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const params = await searchParams;
   const [data, accessData] = await Promise.all([
     getSettingsData(typeof params.roleId === "string" ? params.roleId : undefined),
-    currentUser.role === "OWNER_ADMIN" ? getUsersAccessData() : Promise.resolve(null),
+    canManageAppUsers(currentUser.role) ? getUsersAccessData() : Promise.resolve(null),
   ]);
   const selectedRole = data.selectedRole;
   const requestedTab = typeof params.tab === "string" ? params.tab : "roles";
@@ -75,23 +75,24 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       <div className="access-table">
         {accessData.users.map((user) => {
           const linkedToCognito = user.authProviderId.startsWith("cognito:");
+          const ownerProtected = user.role === "OWNER_ADMIN" && currentUser.role !== "OWNER_ADMIN";
           const employeeOptions = accessData.employees.filter((employee) => !employee.user || employee.user.id === user.id);
           return <article className={`access-row ${user.active ? "" : "inactive"}`} key={user.id}>
             <div className="access-row-header"><div className="access-summary"><span className="person-avatar">{user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span><span><strong>{user.name}</strong><small>{user.email}</small></span></div>
-              <div className="access-state-actions"><div className="access-badges"><span className={`status-badge ${user.active ? "status-approved" : "status-rejected"}`}>{user.active ? "active" : "inactive"}</span><span className={`status-badge ${linkedToCognito ? "status-cleared" : "status-neutral"}`}>{linkedToCognito ? "Cognito linked" : "pending login"}</span><span className="status-badge status-neutral">{title(user.role)}</span></div>
-                <form action={user.active ? deactivateAppUserAction : reactivateAppUserAction} className="access-status-form">
+              <div className="access-state-actions"><div className="access-badges"><span className={`status-badge ${user.active ? "status-approved" : "status-rejected"}`}>{user.active ? "active" : "inactive"}</span><span className={`status-badge ${linkedToCognito ? "status-cleared" : "status-neutral"}`}>{linkedToCognito ? "Cognito linked" : "pending login"}</span><span className="status-badge status-neutral">{title(user.role)}</span>{ownerProtected && <span className="status-badge status-neutral">owner protected</span>}</div>
+                {!ownerProtected && <form action={user.active ? deactivateAppUserAction : reactivateAppUserAction} className="access-status-form">
                   <input type="hidden" name="userId" value={user.id} />
                   <button className={`button button-compact ${user.active ? "button-danger-outline" : "button-primary"}`} type="submit" disabled={user.id === currentUser.id}>{user.active ? "Deactivate" : "Reactivate"}</button>
-                </form>
+                </form>}
               </div>
             </div>
             <form className="access-edit-form" action={updateAppUserAction}>
               <input type="hidden" name="userId" value={user.id} />
-              <label>Name<input name="name" defaultValue={user.name} required /></label>
-              <label>Email<input name="email" type="email" defaultValue={user.email} required /></label>
-              <label>Role<select name="role" defaultValue={user.role}>{accessRoles.map((role) => <option value={role} key={role}>{title(role)}</option>)}</select></label>
-              <label>Employee profile<select name="employeeId" defaultValue={user.employeeId ?? ""}><option value="">Not linked</option>{employeeOptions.map((employee) => <option value={employee.id} key={employee.id}>{employeeLabel(employee)}</option>)}</select></label>
-              <button className="button button-secondary" type="submit">Save</button>
+              <label>Name<input name="name" defaultValue={user.name} required disabled={ownerProtected} /></label>
+              <label>Email<input name="email" type="email" defaultValue={user.email} required disabled={ownerProtected} /></label>
+              <label>Role<select name="role" defaultValue={user.role} disabled={ownerProtected}>{accessRoles.map((role) => <option value={role} key={role}>{title(role)}</option>)}</select></label>
+              <label>Employee profile<select name="employeeId" defaultValue={user.employeeId ?? ""} disabled={ownerProtected}><option value="">Not linked</option>{employeeOptions.map((employee) => <option value={employee.id} key={employee.id}>{employeeLabel(employee)}</option>)}</select></label>
+              <button className="button button-secondary" type="submit" disabled={ownerProtected}>Save</button>
             </form>
           </article>;
         })}

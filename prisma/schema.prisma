@@ -9,6 +9,7 @@ datasource db {
 
 enum UserRole {
   OWNER_ADMIN
+  ADMIN
   HR_ADMIN
   MANAGER
   EMPLOYEE
@@ -65,6 +66,7 @@ model User {
   name                 String
   role                 UserRole
   active               Boolean               @default(true)
+  tutorialCompletedAt  DateTime?
   employeeId           String?               @unique
   employee             Employee?             @relation("EmployeeUser", fields: [employeeId], references: [id], onDelete: SetNull)
   approvedRequirements EmployeeRequirement[] @relation("RequirementApprovedBy")

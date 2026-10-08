@@ -11,6 +11,7 @@ This version includes:
 - AWS Cognito Hosted UI authentication.
 - App-level role authorization.
 - Owner/admin user management.
+- First-access tutorial and secondary administrator access.
 - Employee directory and employee profile management.
 - Configurable job roles and compliance tasks.
 - Employee task assignment and clearance calculation.
@@ -39,6 +40,7 @@ Cognito authenticates identity. The application database authorizes access. A Co
 Roles:
 
 - `OWNER_ADMIN`
+- `ADMIN`
 - `HR_ADMIN`
 - `MANAGER`
 - `EMPLOYEE`

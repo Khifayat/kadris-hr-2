@@ -12,6 +12,10 @@ Use **task** and **tasks** in user-facing copy for compliance assignments. Inter
 
 The HR workspace uses a modern, calm operational aesthetic: a light navy-tinted canvas, restrained white surfaces, a white navigation rail, generous 13–15px corner radii, and soft low-contrast depth rather than heavy outlines or dense card borders. Typography and whitespace should make primary data easy to scan without relying on decoration. Interactive hover states use quiet blue surface shifts; magenta is reserved for focused accents and attention states.
 
+## First-access guidance
+
+First access uses a focused, completion-based interactive guide anchored above the workspace. It introduces three role-appropriate starting points, shows step progress, and lets the user open the relevant section from each step without obscuring the interface. The guide uses the same white-surface, navy, and blue hierarchy as the workspace.
+
 ## Brand direction
 
 The product uses the Kadris Support Systems logo and a blue-led palette derived from the public site:

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const userRoles = ["OWNER_ADMIN", "HR_ADMIN", "MANAGER", "EMPLOYEE"] as const;
+export const userRoles = ["OWNER_ADMIN", "ADMIN", "HR_ADMIN", "MANAGER", "EMPLOYEE"] as const;
 
 const optionalEmployeeId = z.string().trim().optional().transform((value) => value || null);
 

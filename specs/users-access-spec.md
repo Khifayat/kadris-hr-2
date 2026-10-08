@@ -26,7 +26,7 @@ Allow owner/admins to manage app authorization records without manual database e
 
 ## Owner/admin UI
 
-The Users & Access panel appears on `/settings` only for `OWNER_ADMIN` users.
+The Users & Access panel appears on `/settings` for `OWNER_ADMIN` and `ADMIN` users.
 
 Capabilities:
 
@@ -36,6 +36,8 @@ Capabilities:
 - View Cognito linked/pending login status.
 - Deactivate user.
 - Reactivate user.
+
+`ADMIN` is the secondary administrator role. It can manage app users and operational configuration without being the account owner. An Administrator cannot manage an `OWNER_ADMIN` record or assign the `OWNER_ADMIN` role; those ownership controls remain reserved for the Owner Admin.
 
 ## Signed-in profile
 
@@ -48,7 +50,7 @@ The panel uses responsive access cards rather than a fixed-width table. At narro
 - Current user cannot deactivate their own account.
 - The system prevents deactivating or demoting the last active owner/admin.
 - Employee profile can only be linked to one user.
-- User mutations require `OWNER_ADMIN`.
+- User mutations require `OWNER_ADMIN` or `ADMIN`, with Owner Admin protections enforced server-side.
 
 ## Cognito linking behavior
 

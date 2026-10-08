@@ -48,9 +48,17 @@ In that mode, the app resolves the first active `OWNER_ADMIN` record from the lo
 
 ## Role permissions
 
-- `OWNER_ADMIN`, `HR_ADMIN`: HR write access.
-- `OWNER_ADMIN`, `HR_ADMIN`, `MANAGER`: HR read workspace access.
+- `OWNER_ADMIN`, `ADMIN`, `HR_ADMIN`: HR write access.
+- `OWNER_ADMIN`, `ADMIN`, `HR_ADMIN`, `MANAGER`: HR read workspace access.
 - `EMPLOYEE`: own self-service and reminders access.
+
+`ADMIN` is a secondary application-administrator role. It can manage Users & Access and the operational workspace, but cannot create, edit, promote, deactivate, or reactivate an `OWNER_ADMIN` account. `OWNER_ADMIN` remains the account-ownership role.
+
+## First-access tutorial
+
+Each user is shown a short first-access tutorial until they complete it. The completion timestamp is stored in `User.tutorialCompletedAt`, so the tutorial does not reappear on later devices or sessions. It introduces the dashboard or task workspace, employee/task handling, and the relevant administration or reminder area for the user’s role. Completion records a `FIRST_ACCESS_TUTORIAL_COMPLETED` audit event.
+
+The profile page includes a **View tutorial** action that clears the signed-in user’s completion timestamp and returns them to the dashboard with the walkthrough available again.
 
 ## Navigation behavior
 
