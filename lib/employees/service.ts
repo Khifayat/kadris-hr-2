@@ -3,7 +3,9 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "../../generated/prisma/client";
 import { calculateEmployeeClearance, isConditionSatisfied } from "../compliance";
+import { disableCognitoUser } from "../auth/cognito-admin";
 import { prisma } from "../db/prisma";
+import { deleteDocumentObject } from "../documents/storage";
 import type { CreateEmployeeInput } from "./schema";
 
 export async function createEmployeeWithRequirements(
@@ -154,4 +156,58 @@ export async function createEmployeeWithRequirements(
 
     return { employeeId: employee.id, userId: appUser.id };
   });
+}
+
+export async function deleteEmployee(employeeId: string, actorId: string): Promise<void> {
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: {
+      id: true,
+      employeeNumber: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      user: { select: { id: true, email: true, authProviderId: true } },
+      documents: { select: { storageKey: true } },
+    },
+  });
+  if (!employee) throw new Error("Employee not found.");
+  if (employee.user?.id === actorId) throw new Error("You cannot delete your own employee profile.");
+
+  if (employee.user?.authProviderId.startsWith("cognito:")) {
+    await disableCognitoUser(employee.user.email);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "EMPLOYEE_DELETED",
+        entityType: "Employee",
+        entityId: employee.id,
+        oldValue: {
+          employeeNumber: employee.employeeNumber,
+          name: `${employee.firstName} ${employee.lastName}`,
+          email: employee.email,
+        },
+      },
+    });
+
+    if (employee.user) {
+      await tx.user.update({
+        where: { id: employee.user.id },
+        data: { active: false, employeeId: null },
+      });
+    }
+
+    await tx.employee.delete({ where: { id: employee.id } });
+  });
+
+  const storageCleanup = await Promise.allSettled(
+    employee.documents.map((document) => deleteDocumentObject(document.storageKey)),
+  );
+  const cleanupFailures = storageCleanup.filter((result) => result.status === "rejected");
+  if (cleanupFailures.length > 0) {
+    console.error(`Failed to remove ${cleanupFailures.length} stored document(s) for deleted employee ${employee.id}.`);
+  }
 }

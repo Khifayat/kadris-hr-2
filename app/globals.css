@@ -57,3 +57,78 @@ button,input,select { font:inherit; }
 .access-create-grid { grid-template-columns:1fr 1.2fr .8fr 1fr; }
 @media (max-width:1100px) { .access-row { grid-template-columns:1fr; align-items:start; }.access-edit-form,.access-create-grid { grid-template-columns:1fr 1fr; }.access-status-form { justify-content:flex-start; } }
 @media (max-width:760px) { .access-edit-form,.access-create-grid { grid-template-columns:1fr; } }
+
+/* Responsive layout refinements */
+html { overflow-x:hidden; }
+body { min-width:0; overflow-x:hidden; }
+img,svg,video,canvas { max-width:100%; }
+.success-banner { margin-bottom:20px; padding:14px 18px; border:1px solid #bfe3d6; border-radius:10px; display:flex; align-items:center; gap:10px; color:#176653; background:#edf9f5; font-size:12px; }
+.success-banner strong { font-size:13px; }
+.danger-zone { border-color:#efc8ce; background:#fffafb; }
+.danger-zone h2 { color:#9f2f3e!important; border-color:#f2dadd!important; }
+.danger-zone p { color:#76535a; font-size:11px; line-height:1.55; }
+.delete-employee-form .button { width:100%; }
+
+@media (max-width:1180px) {
+  .page-wrap,.page-wrap.narrow { width:calc(100% - 40px); }
+  .dashboard-grid,.profile-grid { grid-template-columns:minmax(0,1fr); }
+  .profile-side { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .metric-grid,.reminder-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .compliance-grid,.settings-grid { grid-template-columns:minmax(0,1fr); }
+  .upload-form { grid-template-columns:minmax(0,1fr) minmax(150px,.55fr); }
+  .upload-form .button { grid-column:1/-1; }
+}
+
+@media (max-width:1050px) {
+  .brand>span:last-child,.nav-label { display:none; }
+  .nav-link,.nav-link:not(:hover) { font-size:0; }
+  .nav-link span { font-size:19px; }
+  .topbar { padding-inline:24px; }
+  .table-row { grid-template-columns:minmax(220px,1.5fr) minmax(130px,1fr) 110px 18px; }
+  .table-row>span:nth-child(3),.table-row>span:nth-child(4) { display:none; }
+}
+
+@media (max-width:760px) {
+  .sidebar { gap:4px; scrollbar-width:thin; }
+  .sidebar .brand,.sidebar nav { flex:0 0 auto; }
+  .sidebar nav { display:flex; min-width:max-content; }
+  .nav-link,.nav-link:not(:hover) { font-size:0; }
+  .page-wrap,.page-wrap.narrow { width:calc(100% - 28px); padding:28px 0 48px; }
+  .page-heading { gap:18px; margin-bottom:22px; }
+  .page-heading .button { width:100%; }
+  .profile-hero { padding:20px; align-items:flex-start; }
+  .profile-title { align-items:flex-start; flex-direction:column; }
+  .profile-side { grid-template-columns:minmax(0,1fr); }
+  .directory-tools { padding:14px; flex-wrap:wrap; }
+  .directory-tools .search-box { flex-basis:100%; }
+  .directory-tools .button { width:100%; }
+  .filter-tabs { gap:18px; overflow-x:auto; scrollbar-width:thin; }
+  .filter-tabs a { flex:0 0 auto; }
+  .table-row>span:nth-child(5) { display:block; }
+  .requirement-summary,.review-note { align-items:flex-start; flex-direction:column; }
+  .review-actions,.review-actions form,.reject-form { width:100%; min-width:0; }
+  .reject-form { flex-direction:column; }
+  .reject-form input,.review-actions .button { width:100%; min-width:0; }
+  .form-actions { flex-direction:column-reverse; }
+  .form-actions .button { width:100%; }
+  .success-banner { align-items:flex-start; flex-direction:column; }
+}
+
+@media (max-width:520px) {
+  .metric-grid,.compliance-metrics,.portal-summary-grid,.reminder-metrics { grid-template-columns:minmax(0,1fr); }
+  .profile-hero { flex-direction:column; }
+  .profile-avatar { width:56px; height:56px; border-radius:13px; font-size:21px; }
+  .profile-title h1 { font-size:24px; }
+  .panel-heading,.attention-banner { align-items:flex-start; }
+  .attention-banner { padding:16px; }
+  .checklist-row-expanded { padding-inline:14px; grid-template-columns:26px minmax(0,1fr); gap:9px; }
+  .document-chip { width:100%; }
+  .document-chip span { max-width:100%; }
+  .detail-list div { align-items:flex-start; flex-direction:column; gap:5px; }
+  .detail-list dd { text-align:left; overflow-wrap:anywhere; }
+  .upload-form { grid-template-columns:minmax(0,1fr); }
+  .button { max-width:100%; }
+  .login-panel { min-height:280px; padding:28px 22px; }
+  .login-panel h1 { font-size:34px; }
+  .login-card { padding:30px 18px; }
+}

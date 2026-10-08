@@ -1,9 +1,9 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { GetObjectCommand, PutObjectCommand, S3Client, type GetObjectCommandOutput } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client, type GetObjectCommandOutput } from "@aws-sdk/client-s3";
 
 const localStorageRoot = path.join(process.cwd(), "storage", "employee-documents");
 
@@ -145,4 +145,19 @@ export async function getDocumentObject(key: string): Promise<{ bytes: Buffer }>
   );
 
   return { bytes: await bodyToBuffer(response.Body) };
+}
+
+export async function deleteDocumentObject(key: string): Promise<void> {
+  if (getStorageMode() === "local") {
+    try {
+      await unlink(path.join(localStorageRoot, key));
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") return;
+      throw error;
+    }
+    return;
+  }
+
+  const config = getS3Config();
+  await createS3Client().send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
 }

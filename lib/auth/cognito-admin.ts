@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   AdminCreateUserCommand,
+  AdminDisableUserCommand,
   AdminGetUserCommand,
   type AdminGetUserCommandOutput,
   CognitoIdentityProviderClient,
@@ -53,4 +54,19 @@ export async function inviteCognitoUser(input: { email: string; name: string }) 
     ],
   }));
   return { sub: getSub(created.User?.Attributes), status: created.User?.UserStatus ?? "UNKNOWN" };
+}
+
+export async function disableCognitoUser(email: string) {
+  const config = getAdminConfig();
+  const client = new CognitoIdentityProviderClient({ region: config.region });
+
+  try {
+    await client.send(new AdminDisableUserCommand({
+      UserPoolId: config.userPoolId,
+      Username: email,
+    }));
+  } catch (error) {
+    if (error instanceof Error && error.name === "UserNotFoundException") return;
+    throw error;
+  }
 }

@@ -10,6 +10,7 @@ export default async function EmployeesPage({ searchParams }: PageProps<"/employ
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q : "";
   const status = typeof params.status === "string" ? params.status : "ALL";
+  const deleted = params.deleted === "1";
   const employees = await listEmployees(query, status);
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -17,6 +18,7 @@ export default async function EmployeesPage({ searchParams }: PageProps<"/employ
   return (
     <main className="page-wrap">
       <div className="page-heading"><div><p className="eyebrow">People</p><h1>Employees</h1><p>Manage onboarding, roles, and compliance readiness.</p></div><Link className="button button-primary" href="/employees/new">+ Add employee</Link></div>
+      {deleted && <section className="success-banner" role="status"><strong>Employee deleted</strong><span>The employee profile was removed and linked app access was disabled.</span></section>}
       <section className="panel employee-directory">
         <form className="directory-tools">
           <label className="search-box"><span>⌕</span><input defaultValue={query} name="q" placeholder="Search by name, email, or employee ID" /></label>

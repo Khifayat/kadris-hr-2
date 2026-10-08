@@ -6,6 +6,20 @@ import { requireRole } from "@/lib/auth/session";
 import { approveRequirement, rejectRequirement, submitRequirementDocument } from "@/lib/documents/service";
 import { HR_WRITE_ROLES } from "@/lib/permissions/roles";
 import { inviteEmployeeUser } from "@/lib/users/service";
+import { deleteEmployee } from "@/lib/employees/service";
+
+export async function deleteEmployeeAction(formData: FormData) {
+  const actor = await requireRole(HR_WRITE_ROLES);
+  const employeeId = formData.get("employeeId");
+  if (typeof employeeId !== "string" || !employeeId) throw new Error("Employee is required.");
+  await deleteEmployee(employeeId, actor.id);
+  revalidatePath("/employees");
+  revalidatePath("/dashboard");
+  revalidatePath("/compliance");
+  revalidatePath("/reminders");
+  revalidatePath("/settings");
+  redirect("/employees?deleted=1");
+}
 
 export async function inviteEmployeeUserAction(formData: FormData) {
   const actor = await requireRole(HR_WRITE_ROLES);
