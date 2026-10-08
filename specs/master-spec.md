@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Kadris HR is an internal HR and compliance management app for Kadris Support Services. It centralizes employee onboarding, compliance requirements, document evidence, clearance-to-work status, reminders, and app-level access management.
+Kadris HR is an internal HR and compliance management app for Kadris Support Systems. It centralizes employee onboarding, compliance requirements, document evidence, clearance-to-work status, reminders, and app-level access management.
 
 ## Current version scope
 
@@ -12,14 +12,18 @@ This version includes:
 - App-level role authorization.
 - Owner/admin user management.
 - Employee directory and employee profile management.
-- Configurable job roles and compliance requirements.
-- Employee requirement assignment and clearance calculation.
+- Configurable job roles and compliance tasks.
+- Employee task assignment and clearance calculation.
 - HR document upload, approval, rejection, and protected download.
 - Private S3 document storage with optional KMS encryption.
 - Employee self-service requirements page.
 - Compliance and reminder queues.
 - Dashboard summary metrics.
 - Audit log persistence for major HR/admin actions.
+
+## Deferred launch item
+
+Before wrapping the application for handoff or release, implement first-use owner setup. When no linked owner employee profile exists, the initial owner/admin should be guided to create an employee profile and have it linked to their app account automatically. Do not treat the application as fully wrapped until this flow is either implemented or explicitly deferred by the owner.
 
 ## Primary personas
 
@@ -56,6 +60,7 @@ Core rule: never treat navigation visibility as authorization. Protected pages a
 - `/my-requirements` — employee self-service portal.
 - `/reminders` — reminder inbox.
 - `/settings` — job role, requirement, and owner-only users/access configuration.
+- `/profile` — signed-in user profile and self-service account-contact details.
 - `/unauthorized` — restricted access page.
 
 ## Data model overview
@@ -117,5 +122,6 @@ The app currently uses Next.js 16. Prefer local docs under `node_modules/next/di
 - [Employee Self-Service](./self-service-spec.md)
 - [Reminders](./reminders-spec.md)
 - [Dashboard](./dashboard-spec.md)
+- [Product Design System](./design-system-spec.md)
 - [Data and Security](./data-security-spec.md)
 - [UAT Deployment](./deployment-uat-spec.md)

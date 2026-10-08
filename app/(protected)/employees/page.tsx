@@ -16,7 +16,7 @@ export default async function EmployeesPage({ searchParams }: PageProps<"/employ
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   return (
-    <main className="page-wrap">
+    <main className="page-wrap workspace-page employees-page">
       <div className="page-heading"><div><p className="eyebrow">People</p><h1>Employees</h1><p>Manage onboarding, roles, and compliance readiness.</p></div><Link className="button button-primary" href="/employees/new">+ Add employee</Link></div>
       {deleted && <section className="success-banner" role="status"><strong>Employee deleted</strong><span>The employee profile was removed and linked app access was disabled.</span></section>}
       <section className="panel employee-directory">
@@ -35,7 +35,7 @@ export default async function EmployeesPage({ searchParams }: PageProps<"/employ
             const approved = applicable.filter((item) => item.status === "APPROVED" && (!item.expirationDate || item.expirationDate >= today)).length;
             const completion = applicable.length ? Math.round((approved / applicable.length) * 100) : 0;
             return <Link className="table-row" href={`/employees/${employee.id}`} role="row" key={employee.id}>
-              <span className="employee-name"><span className="person-avatar">{employee.firstName[0]}{employee.lastName[0]}</span><span><strong>{employee.firstName} {employee.lastName}</strong><small>{employee.employeeNumber} · {employee.email}</small></span></span>
+              <span className="employee-name"><span className="person-avatar">{employee.firstName[0]}{employee.lastName[0]}</span><span className="employee-title"><strong>{employee.firstName} {employee.lastName}</strong><small className="employee-number">{employee.employeeNumber}</small></span></span>
               <span><strong>{employee.jobRole.name}</strong><small>{employee.jobRole.department}</small></span>
               <span><span className="status-badge status-neutral">{employee.status.toLowerCase()}</span></span>
               <span className="completion"><strong>{completion}%</strong><span><i style={{ width: `${completion}%` }} /></span></span>

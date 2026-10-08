@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { inviteCognitoUser } from "../auth/cognito-admin";
 import { prisma } from "../db/prisma";
-import { createAppUserSchema, updateAppUserSchema } from "./schema";
+import { createAppUserSchema, updateAppUserSchema, updateOwnProfileSchema } from "./schema";
 
 function getFormId(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -128,6 +128,28 @@ export async function updateAppUser(formData: FormData, actorId: string) {
       entityType: "User",
       entityId: user.id,
       newValue: { email: user.email, role: user.role, employeeId: user.employeeId, active: user.active },
+    },
+  });
+}
+
+export async function updateOwnProfile(formData: FormData, userId: string) {
+  const input = updateOwnProfileSchema.parse({
+    email: formData.get("email"),
+    name: formData.get("name"),
+  });
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { email: input.email, name: input.name },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorId: userId,
+      action: "USER_PROFILE_UPDATED",
+      entityType: "User",
+      entityId: user.id,
+      newValue: { email: user.email, name: user.name },
     },
   });
 }

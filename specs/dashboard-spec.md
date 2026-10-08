@@ -23,6 +23,10 @@ The dashboard displays:
 - top reminder queue items;
 - pending review, expired, and expiring-soon summary counts.
 
+## Viewport behavior
+
+On desktop and tablet layouts, the dashboard is a viewport-bound workspace. The page header, alert banner when present, and summary cards remain visible without a page-level vertical scrollbar. Recent employees and reminder items scroll inside their respective panels when their content exceeds the available panel height. On small screens, the dashboard returns to normal document scrolling so cards and touch controls remain usable.
+
 ## Access
 
 Dashboard is part of the HR workspace and is visible to HR read roles.

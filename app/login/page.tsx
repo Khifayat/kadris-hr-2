@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { isCognitoConfigured } from "@/lib/auth/cognito";
 
 export const dynamic = "force-dynamic";
@@ -11,28 +12,28 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <main className="login-page">
       <section className="login-panel">
-        <div className="brand brand-dark"><span className="brand-mark">K</span><span><strong>Kadris</strong><small>Support Services</small></span></div>
+        <div className="brand brand-dark"><Image className="brand-logo" src="/brand/kadris-support-systems.png" alt="Kadris Support Systems" width={1024} height={461} priority /></div>
         <div>
           <p className="eyebrow">HR &amp; Compliance</p>
-          <h1>Know who is ready to work.</h1>
+          <h1>Support your team with confidence.</h1>
           <p>One secure place for onboarding, credentials, approvals, and clear-to-work decisions.</p>
         </div>
         <p className="login-foot">Private system · Authorized personnel only</p>
       </section>
       <section className="login-card">
-        {cognitoConfigured ? (
-          <div>
-            {params.error && <span className="status-badge status-rejected">Sign-in failed</span>}
-            <h2>Secure sign in</h2>
-            <p>Use your Kadris account to access employee records, compliance documents, and reminders.</p>
-            <a className="button button-primary" href="/auth/login">Continue with AWS Cognito</a>
-          </div>
-        ) : devBypass ? (
+        {devBypass ? (
           <div>
             <span className="status-badge status-cleared">Development access enabled</span>
             <h2>Local workspace ready</h2>
             <p>You are signed in as the seeded owner administrator for local development.</p>
             <Link className="button button-primary" href="/dashboard">Open dashboard</Link>
+          </div>
+        ) : cognitoConfigured ? (
+          <div>
+            {params.error && <span className="status-badge status-rejected">Sign-in failed</span>}
+            <h2>Secure sign in</h2>
+            <p>Use your Kadris account to access employee records, compliance documents, and reminders.</p>
+            <a className="button button-primary" href="/auth/login">Continue with AWS Cognito</a>
           </div>
         ) : (
           <div>

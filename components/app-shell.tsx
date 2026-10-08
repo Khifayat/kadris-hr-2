@@ -1,11 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AppUser } from "@/lib/auth/session";
 import { canManageEmployees, canReadHrWorkspace } from "@/lib/permissions/roles";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "grid", access: "hr" },
-  { href: "/my-requirements", label: "My Requirements", icon: "checklist", access: "all" },
+  { href: "/my-requirements", label: "My Tasks", icon: "checklist", access: "all" },
   { href: "/employees", label: "Employees", icon: "people", access: "hr" },
   { href: "/compliance", label: "Compliance", icon: "shield", access: "hr" },
   { href: "/reminders", label: "Reminders", icon: "bell", access: "all" },
@@ -38,8 +39,7 @@ export function AppShell({ user, children }: { user: AppUser; children: ReactNod
     <div className="app-shell">
       <aside className="sidebar">
         <Link className="brand" href="/dashboard">
-          <span className="brand-mark">K</span>
-          <span><strong>Kadris</strong><small>Support Services</small></span>
+          <Image className="brand-logo" src="/brand/kadris-support-systems.png" alt="Kadris Support Systems" width={1024} height={461} priority />
         </Link>
         <nav aria-label="Primary navigation">
           <p className="nav-label">Workspace</p>
@@ -49,15 +49,18 @@ export function AppShell({ user, children }: { user: AppUser; children: ReactNod
             </Link>
           ))}
         </nav>
-        <div className="sidebar-foot">
-          <div className="avatar">{initials}</div>
-          <div><strong>{user.name}</strong><small>{user.role.replaceAll("_", " ")} · <a href="/auth/logout">Sign out</a></small></div>
+        <div className="sidebar-footer-actions">
+          <a href="/auth/logout">Sign out</a>
         </div>
       </aside>
       <div className="app-content">
         <header className="topbar">
-          <div><span className="environment-dot" /> Secure HR workspace</div>
-          <div className="topbar-date">Kadris Support Services</div>
+          <div className="topbar-actions">
+            <Link className="header-profile-link" href="/profile" aria-label={`Open profile for ${user.name}`}>
+              <span className="avatar">{initials}</span>
+              <span><strong>{user.name}</strong><small>{user.role.replaceAll("_", " ")}</small></span>
+            </Link>
+          </div>
         </header>
         {children}
       </div>

@@ -15,5 +15,11 @@ export const updateAppUserSchema = createAppUserSchema.extend({
   userId: z.string().trim().min(1, "User is required"),
 });
 
+export const updateOwnProfileSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address").max(254).transform((value) => value.toLowerCase()),
+  name: z.string().trim().min(2, "Name is required").max(160),
+});
+
 export type CreateAppUserInput = z.infer<typeof createAppUserSchema>;
 export type UpdateAppUserInput = z.infer<typeof updateAppUserSchema>;
+export type UpdateOwnProfileInput = z.infer<typeof updateOwnProfileSchema>;

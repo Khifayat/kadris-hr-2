@@ -37,7 +37,7 @@ export function CreateEmployeeForm({ roles, supervisors }: { roles: Option[]; su
         <label>Hire date<input name="hireDate" type="date" required /><FieldError errors={state.fieldErrors?.hireDate} /></label>
         <label>Employment type<select name="employmentType" defaultValue="FULL_TIME"><option value="FULL_TIME">Full time</option><option value="PART_TIME">Part time</option><option value="PRN">PRN</option><option value="CONTRACTOR">Contractor</option><option value="TEMPORARY">Temporary</option></select></label>
       </div></section>
-      <section className="form-section"><div className="form-section-copy"><span>03</span><div><h2>Job duties</h2><p>These answers activate conditional requirements.</p></div></div><div className="duty-options">
+      <section className="form-section"><div className="form-section-copy"><span>03</span><div><h2>Job duties</h2><p>These answers activate conditional tasks.</p></div></div><div className="duty-options">
         <label className="checkbox-card"><input name="transportsParticipants" type="checkbox" /><span><strong>Transports participants</strong><small>Requires a driver&apos;s license and auto insurance.</small></span></label>
         <label className="checkbox-card"><input name="performsMedicationDuties" type="checkbox" /><span><strong>Performs medication duties</strong><small>Requires Medication Technician certification when mapped to the role.</small></span></label>
       </div></section>

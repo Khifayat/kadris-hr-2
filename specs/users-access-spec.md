@@ -37,6 +37,12 @@ Capabilities:
 - Deactivate user.
 - Reactivate user.
 
+## Signed-in profile
+
+The identity shown at the bottom of the navigation rail links to `/profile`. Every signed-in user can update their own display name and contact email there. Role, account activation, and employee-profile linking remain controlled in owner-only **Users & Access**. Self-service profile changes are recorded as `USER_PROFILE_UPDATED` audit events.
+
+The panel uses responsive access cards rather than a fixed-width table. At narrow widths, identity, role, status, and actions stack without clipping email addresses or controls.
+
 ## Safeguards
 
 - Current user cannot deactivate their own account.

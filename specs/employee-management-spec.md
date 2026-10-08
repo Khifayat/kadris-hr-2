@@ -33,7 +33,7 @@ Core employee fields:
 
 ## Directory
 
-The directory supports employee listing and filtering/search through server-side query utilities.
+The directory supports employee listing and filtering/search through server-side query utilities. To keep the operational list easy to scan, each row shows the employee name with its blue employee-number identifier aligned alongside it; email remains searchable and is available in the employee profile rather than displayed in every directory row.
 
 ## Create employee flow
 
@@ -57,6 +57,26 @@ Profile displays:
 - uploaded documents per requirement
 - review/approval controls for HR/admin users
 - recent audit activity
+
+The profile separates independent information into URL-based tabs to avoid presenting all employee data as one long page:
+
+- **Compliance** is the default tab and contains the requirement checklist and document actions.
+- **Employment** contains employment metadata and contact information.
+- **Access** contains invitation status and, for users with employee-management permission, the delete action.
+- **Activity** contains the employee audit history.
+
+Tab links use the `tab` query parameter, for example `/employees/{id}?tab=activity`. The active tab must be server-rendered and directly linkable.
+
+## Delete employee
+
+HR users can delete an employee from the employee profile after confirming a destructive-action prompt. The system must:
+
+1. Reject attempts to delete the acting user's own employee profile.
+2. Disable the linked Cognito account when the employee has one.
+3. Deactivate and unlink the related app `User` record rather than deleting that authorization record.
+4. Delete the employee and its related compliance records and documents according to database relations.
+5. Attempt to remove each stored document object after the database deletion. A storage cleanup failure must be logged and must not roll back the completed employee deletion.
+6. Record the `EMPLOYEE_DELETED` audit event before deleting the employee.
 
 ## Permissions
 

@@ -16,7 +16,7 @@ export default async function CompliancePage() {
   const queue = await getComplianceQueue();
   const totalQueue = queue.pendingReview.length + queue.expired.length + queue.expiring.length;
 
-  return <main className="page-wrap">
+  return <main className="page-wrap workspace-page compliance-page">
     <div className="page-heading"><div><p className="eyebrow">Compliance</p><h1>Compliance queue</h1><p>{totalQueue} item{totalQueue === 1 ? "" : "s"} need review, renewal, or monitoring.</p></div></div>
     <section className="metric-grid compliance-metrics">
       <article className="metric-card metric-amber"><span>Pending review</span><strong>{queue.pendingReview.length}</strong><small>Documents waiting on HR</small></article>

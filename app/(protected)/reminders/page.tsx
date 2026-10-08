@@ -14,7 +14,7 @@ export default async function RemindersPage() {
   const user = await requireUser();
   const inbox = await getReminderInbox(user);
 
-  return <main className="page-wrap">
+  return <main className="page-wrap workspace-page reminders-page">
     <div className="page-heading"><div><p className="eyebrow">Reminders</p><h1>Compliance reminders</h1><p>{inbox.reminders.length} reminder{inbox.reminders.length === 1 ? "" : "s"} need action or monitoring.</p></div></div>
     <section className="metric-grid reminder-metrics">
       <article className="metric-card metric-red"><span>Critical</span><strong>{inbox.critical}</strong><small>Expired or urgent items</small></article>

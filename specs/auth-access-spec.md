@@ -31,6 +31,15 @@ The app session is an HMAC-signed cookie. Passwords are never stored by the app.
 
 ## Authorization rules
 
+## Local development access
+
+Local development can use an explicit Cognito-free path only when both conditions are true:
+
+- `NODE_ENV` is not `production`.
+- `DEV_AUTH_BYPASS` is exactly `true`.
+
+In that mode, the app resolves the first active `OWNER_ADMIN` record from the local database and the login page offers an **Open dashboard** action. This path is for local testing only. It must never be enabled in UAT or production, and it must not create, persist, or expose Cognito tokens.
+
 - `DEV_AUTH_BYPASS` is only accepted outside production and only when explicitly set to `true`.
 - In normal mode, no app user means no access.
 - Inactive app users are blocked.
@@ -46,6 +55,8 @@ The app session is an HMAC-signed cookie. Passwords are never stored by the app.
 ## Navigation behavior
 
 Navigation is filtered by role in `AppShell`, but this is convenience only. Server checks remain authoritative.
+
+The sidebar provides sign-out at its bottom on desktop layouts. The same sign-out action is available from `/profile`.
 
 ## Failure states
 

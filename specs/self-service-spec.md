@@ -14,7 +14,7 @@ Allow linked employees to view and submit their own compliance requirements with
 
 A user must be authenticated and linked to an `Employee` through `User.employeeId` to see their own checklist.
 
-If the user is not linked to an employee profile, the page displays an empty state instructing them to contact HR.
+If the user is not linked to an employee profile, the page displays an empty state instructing them to contact HR. User-facing assignment language uses **tasks**; underlying compatibility names may still use `requirement`.
 
 ## Capabilities
 

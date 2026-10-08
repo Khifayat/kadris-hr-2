@@ -14,7 +14,7 @@ export async function submitMyDocumentAction(formData: FormData) {
   }
 
   if (!canReadHrWorkspace(user.role) && user.employeeId !== requestedEmployeeId) {
-    throw new Error("You can only submit documents for your own requirements.");
+    throw new Error("You can only submit documents for your own tasks.");
   }
 
   const employeeId = await submitRequirementDocumentForEmployee(formData, user.id, requestedEmployeeId);
